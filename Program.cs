@@ -1,3 +1,21 @@
+List<Vehicle> vehicles = new List<Vehicle>()
+{
+    new Vehicle()
+    {
+        Id = 1,
+        Type = "Car"
+    },
+    new Vehicle()
+    {
+        Id = 2,
+        Type = "SUV"
+    },
+    new Vehicle()
+    {
+        Id = 3,
+        Type = "Truck"
+    }
+};
 List<PaintColor> paintColors = new List<PaintColor>()
 {
     new PaintColor()
@@ -111,6 +129,7 @@ List<Order> orders = new List<Order>()
     new Order
     {
         Id = 1,
+        VehicleId = 1,
         PaintId = 2,
         InteriorId = 1,
         TechnologyId = 2,
@@ -120,6 +139,7 @@ List<Order> orders = new List<Order>()
     new Order
     {
         Id = 2,
+        VehicleId = 3,
         PaintId = 4,
         InteriorId = 3,
         TechnologyId = 4,
@@ -129,6 +149,7 @@ List<Order> orders = new List<Order>()
     new Order
     {
         Id = 3,
+        VehicleId = 3,
         PaintId = 4,
         InteriorId = 4,
         TechnologyId = 4,
@@ -138,6 +159,7 @@ List<Order> orders = new List<Order>()
     new Order
     {
         Id = 4,
+        VehicleId = 1,
         PaintId = 2,
         InteriorId = 2,
         TechnologyId = 1,
@@ -147,6 +169,7 @@ List<Order> orders = new List<Order>()
     new Order
     {
         Id = 5,
+        VehicleId = 2,
         PaintId = 3,
         InteriorId = 1,
         TechnologyId = 2,
@@ -161,6 +184,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddCors();
 
 var app = builder.Build();
 
@@ -169,11 +193,26 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    app.UseCors(options =>
+    {
+        options.AllowAnyOrigin();
+        options.AllowAnyMethod();
+        options.AllowAnyHeader();
+    });
 }
 
 app.UseHttpsRedirection();
 
 // Get Methods
+app.MapGet("/vehicles", () =>
+{
+    return vehicles.Select(v => new VehicleDTO
+    {
+        Id = v.Id,
+        Type = v.Type
+    });
+});
+
 app.MapGet("/paintcolors", () =>
 {
     return paintColors.Select(p => new PaintColorDTO
@@ -218,6 +257,7 @@ app.MapGet("/orders", () =>
 {
     return orders.Select(o =>
     {
+        var vehicle = vehicles.FirstOrDefault(v => v.Id == o.VehicleId);
         var wheel = wheels.FirstOrDefault(w => w.Id == o.WheelId);
         var technology = technologies.FirstOrDefault(t => t.Id == o.TechnologyId);
         var paintColor = paintColors.FirstOrDefault(p => p.Id == o.PaintId);
@@ -227,6 +267,12 @@ app.MapGet("/orders", () =>
         {
             Id = o.Id,
             Timestamp = o.Timestamp,
+            VehicleId = o.VehicleId,
+            Vehicle = vehicle != null ? new VehicleDTO
+            {
+                Id = vehicle.Id,
+                Type = vehicle.Type
+            } : null,
             WheelId = o.WheelId,
             Wheel = wheel != null ? new WheelDTO
             {
@@ -267,6 +313,7 @@ app.MapGet("/orders/{id}", (int id) =>
         return Results.NotFound();
     }
 
+    Vehicle vehicle = vehicles.FirstOrDefault(v => v.Id == order.VehicleId);
     Wheel wheel = wheels.FirstOrDefault(w => w.Id == order.WheelId);
     Technology technology = technologies.FirstOrDefault(t => t.Id == order.TechnologyId);
     PaintColor paintColor = paintColors.FirstOrDefault(p => p.Id == order.PaintId);
@@ -276,6 +323,12 @@ app.MapGet("/orders/{id}", (int id) =>
     {
         Id = order.Id,
         Timestamp = order.Timestamp,
+        VehicleId = order.VehicleId,
+        Vehicle = vehicle != null ? new VehicleDTO
+        {
+            Id = vehicle.Id,
+            Type = vehicle.Type
+        } : null,
         WheelId = order.WheelId,
         Wheel = wheel != null ? new WheelDTO
         {
