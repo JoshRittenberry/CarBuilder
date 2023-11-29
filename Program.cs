@@ -173,4 +173,189 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// Get Methods
+app.MapGet("/paintcolors", () =>
+{
+    return paintColors.Select(p => new PaintColorDTO
+    {
+        Id = p.Id,
+        Price = p.Price,
+        Color = p.Color
+    });
+});
+
+app.MapGet("/interiors", () =>
+{
+    return interiors.Select(i => new InteriorDTO
+    {
+        Id = i.Id,
+        Price = i.Price,
+        Material = i.Material
+    });
+});
+
+app.MapGet("/technologies", () =>
+{
+    return technologies.Select(t => new TechnologyDTO
+    {
+        Id = t.Id,
+        Price = t.Price,
+        Package = t.Package
+    });
+});
+
+app.MapGet("/wheels", () =>
+{
+    return wheels.Select(w => new WheelDTO
+    {
+        Id = w.Id,
+        Price = w.Price,
+        Style = w.Style
+    });
+});
+
+app.MapGet("/orders", () =>
+{
+    return orders.Select(o =>
+    {
+        var wheel = wheels.FirstOrDefault(w => w.Id == o.WheelId);
+        var technology = technologies.FirstOrDefault(t => t.Id == o.TechnologyId);
+        var paintColor = paintColors.FirstOrDefault(p => p.Id == o.PaintId);
+        var interior = interiors.FirstOrDefault(i => i.Id == o.InteriorId);
+
+        return new OrderDTO
+        {
+            Id = o.Id,
+            Timestamp = o.Timestamp,
+            WheelId = o.WheelId,
+            Wheel = wheel != null ? new WheelDTO
+            {
+                Id = wheel.Id,
+                Price = wheel.Price,
+                Style = wheel.Style
+            } : null,
+            TechnologyId = o.TechnologyId,
+            Technology = technology != null ? new TechnologyDTO
+            {
+                Id = technology.Id,
+                Price = technology.Price,
+                Package = technology.Package
+            } : null,
+            PaintId = o.PaintId,
+            Paint = paintColor != null ? new PaintColorDTO
+            {
+                Id = paintColor.Id,
+                Price = paintColor.Price,
+                Color = paintColor.Color
+            } : null,
+            InteriorId = o.InteriorId,
+            Interior = interior != null ? new InteriorDTO
+            {
+                Id = interior.Id,
+                Price = interior.Price,
+                Material = interior.Material
+            } : null
+        };
+    });
+});
+
+app.MapGet("/orders/{id}", (int id) =>
+{
+    Order order = orders.FirstOrDefault(o => o.Id == id);
+    if (order == null)
+    {
+        return Results.NotFound();
+    }
+
+    Wheel wheel = wheels.FirstOrDefault(w => w.Id == order.WheelId);
+    Technology technology = technologies.FirstOrDefault(t => t.Id == order.TechnologyId);
+    PaintColor paintColor = paintColors.FirstOrDefault(p => p.Id == order.PaintId);
+    Interior interior = interiors.FirstOrDefault(i => i.Id == order.InteriorId);
+
+    return Results.Ok(new OrderDTO
+    {
+        Id = order.Id,
+        Timestamp = order.Timestamp,
+        WheelId = order.WheelId,
+        Wheel = wheel != null ? new WheelDTO
+        {
+            Id = wheel.Id,
+            Price = wheel.Price,
+            Style = wheel.Style
+        } : null,
+        TechnologyId = order.TechnologyId,
+        Technology = technology != null ? new TechnologyDTO
+        {
+            Id = technology.Id,
+            Price = technology.Price,
+            Package = technology.Package
+        } : null,
+        PaintId = order.PaintId,
+        Paint = paintColor != null ? new PaintColorDTO
+        {
+            Id = paintColor.Id,
+            Price = paintColor.Price,
+            Color = paintColor.Color
+        } : null,
+        InteriorId = order.InteriorId,
+        Interior = interior != null ? new InteriorDTO
+        {
+            Id = interior.Id,
+            Price = interior.Price,
+            Material = interior.Material
+        } : null
+    });
+});
+
+// Post Method
+app.MapPost("/orders", (Order order) =>
+{
+    order.Id = orders.Max(o => o.Id) + 1;
+    orders.Add(order);
+
+    Wheel wheel = wheels.FirstOrDefault(w => w.Id == order.WheelId);
+    Technology technology = technologies.FirstOrDefault(t => t.Id == order.TechnologyId);
+    PaintColor paintColor = paintColors.FirstOrDefault(p => p.Id == order.PaintId);
+    Interior interior = interiors.FirstOrDefault(i => i.Id == order.InteriorId);
+
+    if (wheel == null || technology == null || paintColor == null || interior == null)
+    {
+        return Results.BadRequest();
+    }
+
+    return Results.Created($"/orders/{order.Id}", new OrderDTO
+    {
+        Id = order.Id,
+        Timestamp = DateTime.Now,
+        WheelId = order.WheelId,
+        Wheel = wheel != null ? new WheelDTO
+        {
+            Id = wheel.Id,
+            Price = wheel.Price,
+            Style = wheel.Style
+        } : null,
+        TechnologyId = order.TechnologyId,
+        Technology = technology != null ? new TechnologyDTO
+        {
+            Id = technology.Id,
+            Price = technology.Price,
+            Package = technology.Package
+        } : null,
+        PaintId = order.PaintId,
+        Paint = paintColor != null ? new PaintColorDTO
+        {
+            Id = paintColor.Id,
+            Price = paintColor.Price,
+            Color = paintColor.Color
+        } : null,
+        InteriorId = order.InteriorId,
+        Interior = interior != null ? new InteriorDTO
+        {
+            Id = interior.Id,
+            Price = interior.Price,
+            Material = interior.Material
+        } : null
+    });
+});
+
 app.Run();
