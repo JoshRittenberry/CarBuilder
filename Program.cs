@@ -255,54 +255,57 @@ app.MapGet("/wheels", () =>
 
 app.MapGet("/orders", () =>
 {
-    return orders.Select(o =>
-    {
-        var vehicle = vehicles.FirstOrDefault(v => v.Id == o.VehicleId);
-        var wheel = wheels.FirstOrDefault(w => w.Id == o.WheelId);
-        var technology = technologies.FirstOrDefault(t => t.Id == o.TechnologyId);
-        var paintColor = paintColors.FirstOrDefault(p => p.Id == o.PaintId);
-        var interior = interiors.FirstOrDefault(i => i.Id == o.InteriorId);
-
-        return new OrderDTO
+    return orders
+        .Where(o => o.DateCompleted == null)
+        .Select(o =>
         {
-            Id = o.Id,
-            Timestamp = o.Timestamp,
-            VehicleId = o.VehicleId,
-            Vehicle = vehicle != null ? new VehicleDTO
+            var vehicle = vehicles.FirstOrDefault(v => v.Id == o.VehicleId);
+            var wheel = wheels.FirstOrDefault(w => w.Id == o.WheelId);
+            var technology = technologies.FirstOrDefault(t => t.Id == o.TechnologyId);
+            var paintColor = paintColors.FirstOrDefault(p => p.Id == o.PaintId);
+            var interior = interiors.FirstOrDefault(i => i.Id == o.InteriorId);
+
+            return new OrderDTO
             {
-                Id = vehicle.Id,
-                Type = vehicle.Type
-            } : null,
-            WheelId = o.WheelId,
-            Wheel = wheel != null ? new WheelDTO
-            {
-                Id = wheel.Id,
-                Price = wheel.Price,
-                Style = wheel.Style
-            } : null,
-            TechnologyId = o.TechnologyId,
-            Technology = technology != null ? new TechnologyDTO
-            {
-                Id = technology.Id,
-                Price = technology.Price,
-                Package = technology.Package
-            } : null,
-            PaintId = o.PaintId,
-            Paint = paintColor != null ? new PaintColorDTO
-            {
-                Id = paintColor.Id,
-                Price = paintColor.Price,
-                Color = paintColor.Color
-            } : null,
-            InteriorId = o.InteriorId,
-            Interior = interior != null ? new InteriorDTO
-            {
-                Id = interior.Id,
-                Price = interior.Price,
-                Material = interior.Material
-            } : null
-        };
-    });
+                Id = o.Id,
+                Timestamp = o.Timestamp,
+                DateCompleted = o.DateCompleted,
+                VehicleId = o.VehicleId,
+                Vehicle = vehicle != null ? new VehicleDTO
+                {
+                    Id = vehicle.Id,
+                    Type = vehicle.Type
+                } : null,
+                WheelId = o.WheelId,
+                Wheel = wheel != null ? new WheelDTO
+                {
+                    Id = wheel.Id,
+                    Price = wheel.Price,
+                    Style = wheel.Style
+                } : null,
+                TechnologyId = o.TechnologyId,
+                Technology = technology != null ? new TechnologyDTO
+                {
+                    Id = technology.Id,
+                    Price = technology.Price,
+                    Package = technology.Package
+                } : null,
+                PaintId = o.PaintId,
+                Paint = paintColor != null ? new PaintColorDTO
+                {
+                    Id = paintColor.Id,
+                    Price = paintColor.Price,
+                    Color = paintColor.Color
+                } : null,
+                InteriorId = o.InteriorId,
+                Interior = interior != null ? new InteriorDTO
+                {
+                    Id = interior.Id,
+                    Price = interior.Price,
+                    Material = interior.Material
+                } : null
+            };
+        });
 });
 
 app.MapGet("/orders/{id}", (int id) =>
