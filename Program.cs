@@ -314,6 +314,7 @@ app.MapGet("/orders/{id}", (int id) =>
     }
 
     Vehicle vehicle = vehicles.FirstOrDefault(v => v.Id == order.VehicleId);
+    DateTime? dateCompleted = orders.FirstOrDefault(o => o.Id == id).DateCompleted;
     Wheel wheel = wheels.FirstOrDefault(w => w.Id == order.WheelId);
     Technology technology = technologies.FirstOrDefault(t => t.Id == order.TechnologyId);
     PaintColor paintColor = paintColors.FirstOrDefault(p => p.Id == order.PaintId);
@@ -323,6 +324,7 @@ app.MapGet("/orders/{id}", (int id) =>
     {
         Id = order.Id,
         Timestamp = order.Timestamp,
+        DateCompleted = dateCompleted,
         VehicleId = order.VehicleId,
         Vehicle = vehicle != null ? new VehicleDTO
         {
@@ -409,6 +411,19 @@ app.MapPost("/orders", (Order order) =>
             Material = interior.Material
         } : null
     });
+});
+
+app.MapPost("/orders/{id}/complete", (int id) =>
+{
+    Order orderToComplete = orders.FirstOrDefault(o => o.Id == id);
+    if (orderToComplete == null)
+    {
+        return Results.BadRequest();
+    }
+
+    orderToComplete.DateCompleted = DateTime.Now;
+
+    return Results.NoContent();
 });
 
 app.Run();

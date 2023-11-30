@@ -2,6 +2,7 @@ public class OrderDTO
 {
     public int Id { get; set; }
     public DateTime Timestamp { get; set; }
+    public DateTime? DateCompleted { get; set; }
     public int VehicleId { get; set; }
     public VehicleDTO Vehicle { get; set; }
     public int WheelId { get; set; }
@@ -12,4 +13,16 @@ public class OrderDTO
     public PaintColorDTO Paint { get; set; }
     public int InteriorId { get; set; }
     public InteriorDTO Interior { get; set; }
+    public decimal TotalCost
+    {
+        get
+        {
+            decimal totalCost = 0;
+            if (Wheel != null) totalCost += Wheel.Price;
+            if (Technology != null) totalCost += Technology.Price;
+            if (Paint != null) totalCost += Paint.Price;
+            if (Interior != null) totalCost += Interior.Price;
+            return totalCost;
+        }
+    }
 }
